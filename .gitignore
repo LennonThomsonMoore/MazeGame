@@ -1,0 +1,18 @@
+## Visual Studio / .NET
+.vs/
+bin/
+obj/
+*.user
+*.suo
+
+## Node
+node_modules/
+dist/
+npm-debug.log*
+
+## OS
+.DS_Store
+Thumbs.db
+
+## Database
+*.db
