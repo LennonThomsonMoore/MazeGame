@@ -1,0 +1,6 @@
+services:
+  mazegame:
+    image: ${DOCKER_REGISTRY-}mazegame
+    build:
+      context: .
+      dockerfile: MazeGameWeb/Dockerfile

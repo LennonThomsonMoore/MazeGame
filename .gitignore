@@ -16,3 +16,9 @@ Thumbs.db
 
 ## Database
 *.db
+*.db-shm
+*.db-wal
+
+## Local dev / secrets
+launchSettings.json
+docker-compose.override.yml
