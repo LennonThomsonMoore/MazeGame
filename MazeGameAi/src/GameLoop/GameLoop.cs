@@ -45,7 +45,7 @@ namespace MazeGameAi.src.GameLoop
 
             if (_Role == PlayerType.Hider)
             {
-                agent = new FourClustersAgent();
+                agent = new ClustersAgent();
             }
             else
             {

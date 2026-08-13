@@ -7,11 +7,11 @@ using MazeGameAi.src.PathFinding;
 
 namespace MazeGameAi.src.Agents
 {
-	// This agent partitions the maze into 4 clusters using a simple k-means style
+	// This agent partitions the maze into 3 clusters using a simple k-means style
 	// clustering algorithm. It then heads towards the closest cluster point that is
 	// not in the same cluster as the opponent, moving to another such cluster once it
 	// arrives (or once the opponent's cluster changes).
-	public class FourClustersAgent : IAgent
+	public class ClustersAgent : IAgent
 	{
 		private const int ClusterCount = 3;
 		private const int KMeansIterations = 10;
