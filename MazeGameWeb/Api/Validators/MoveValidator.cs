@@ -9,7 +9,7 @@ using System.Diagnostics;
 
 namespace MazeGame.Api.Validators
 {
-    public class MoveValidator : AbstractValidator<MoveRequest>
+    public class MoveValidator : AbstractValidator<GameWithMoveRequest>
     {
 
         /*
@@ -28,12 +28,14 @@ namespace MazeGame.Api.Validators
 
             7. Movement is exactly one orthogonal square. 
          */
-        public MoveValidator(GameDbContext db)
+        public MoveValidator()
         {
             RuleFor(x => x).CustomAsync(async (request, context, cancellationToken) =>
             {
                 // 1. Game exists.
-                var game = await db.Games.FirstOrDefaultAsync(g => g.GameId == request.GameId, cancellationToken);
+                var game = request.game;
+                var playerToken = request.moveRequest.PlayerToken;
+                var direction = request.moveRequest.Direction;
                 if (game == null)
                 {
                     context.AddFailure(new ValidationFailure("GameId", "Game does not exist.")
@@ -52,7 +54,7 @@ namespace MazeGame.Api.Validators
                     return;
                 }
                 // 3. Player token is valid.
-                if (request.PlayerToken != game.HiderToken && request.PlayerToken != game.SeekerToken)
+                if (playerToken != game.HiderToken && playerToken != game.SeekerToken)
                 {
                     context.AddFailure(new ValidationFailure("PlayerToken", "Invalid player token.")
                     {
@@ -61,7 +63,7 @@ namespace MazeGame.Api.Validators
                     return;
                 }
                 // 4. It is currently that player's turn.
-                PlayerType role = (request.PlayerToken == game.HiderToken) ? PlayerType.Hider : PlayerType.Seeker;
+                PlayerType role = (playerToken == game.HiderToken) ? PlayerType.Hider : PlayerType.Seeker;
                 if (game.CurrentPlayer != role)
                 {
                     context.AddFailure(new ValidationFailure("PlayerToken", "Not this player's turn.")
@@ -74,7 +76,7 @@ namespace MazeGame.Api.Validators
                 Debug.Assert(game.HiderPosition != null && game.SeekerPosition != null, "Player positions should not be null.");
                 PlayerPosition position = (role == PlayerType.Hider) ? game.HiderPosition : game.SeekerPosition;
                 PlayerPosition wantedPosition;
-                switch (request.Direction)
+                switch (direction)
                 {
                     case Direction.North:
                         wantedPosition = new PlayerPosition(position.Row - 1, position.Column);

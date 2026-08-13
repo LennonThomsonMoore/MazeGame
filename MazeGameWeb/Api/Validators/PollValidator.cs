@@ -1,12 +1,10 @@
 ﻿using FluentValidation;
 using FluentValidation.Results;
 using MazeGame.Api.Contracts;
-using MazeGame.Api.Data;
-using Microsoft.EntityFrameworkCore;
 
 namespace MazeGame.Api.Validators
 {
-    public class PollValidator : AbstractValidator<PollRequest>
+    public class PollValidator : AbstractValidator<GameWithPollRequest>
     {
         /*
          * Poll validations.
@@ -14,10 +12,12 @@ namespace MazeGame.Api.Validators
          *  2. Game exists.
          *  3. Player token is valid (Hider or Seeker).
          */
-        public PollValidator(GameDbContext db)
+        public PollValidator()
         {
-            RuleFor(x => x).CustomAsync(async (request, context, cancellationToken) =>
+            RuleFor(x => x).CustomAsync(async (gameWithRequest, context, cancellationToken) =>
             {
+                var request = gameWithRequest.pollRequest;
+                var game = gameWithRequest.game;
                 // 1. playerToken and gameId query parameters are required.
                 if (request.PlayerToken == null || request.GameId == null)
                 {
@@ -28,7 +28,6 @@ namespace MazeGame.Api.Validators
                     return;
                 }
                 // 2. Game exists.
-                var game = await db.Games.FirstOrDefaultAsync(g => g.GameId == request.GameId, cancellationToken);
                 if (game == null)
                 {
                     context.AddFailure(new ValidationFailure("GameId", $"Game with id {request.GameId} not found.")
@@ -46,6 +45,7 @@ namespace MazeGame.Api.Validators
                     });
                     return;
                 }
+                await Task.CompletedTask;
             });
         }
     }

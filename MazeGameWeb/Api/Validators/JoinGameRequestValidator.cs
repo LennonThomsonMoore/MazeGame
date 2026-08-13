@@ -1,19 +1,17 @@
-﻿using Microsoft.EntityFrameworkCore;
-using FluentValidation;
+﻿using FluentValidation;
 using FluentValidation.Results;
 using MazeGame.Api.Contracts;
 using MazeGame.Api.Models;
-using MazeGame.Api.Data;
 
 namespace MazeGame.Api.Validators
 {
-    public class JoinGameRequestValidator : AbstractValidator<JoinGameRequest>
+    public class JoinGameRequestValidator : AbstractValidator<GameWithJoinGameRequest>
     {
-        public JoinGameRequestValidator(GameDbContext db)
+        public JoinGameRequestValidator()
         {
-            RuleFor(x => x).CustomAsync(async (request, context, cancellationToken) =>
+            RuleFor(x => x).CustomAsync(async (gameWithRequest, context, cancellationToken) =>
             {
-                var game = await db.Games.FirstOrDefaultAsync(g => g.GameId == request.GameId, cancellationToken);  
+                var game = gameWithRequest.game;
                 if (game == null)
                 {
 

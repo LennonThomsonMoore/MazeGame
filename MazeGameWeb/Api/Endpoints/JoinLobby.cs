@@ -4,6 +4,7 @@ using MazeGame.Api.Models;
 using Microsoft.EntityFrameworkCore;
 using System.Diagnostics;
 using MazeGame.Api.Services;
+using MazeGame.Api.Validators;
 using FluentValidation;
 
 namespace MazeGame.Api.Endpoints
@@ -12,9 +13,11 @@ namespace MazeGame.Api.Endpoints
     {
         public static void MapJoinLobbyEndpoint(this WebApplication app)
         {
-            app.MapPost("/join", async (JoinGameRequest request, IValidator<JoinGameRequest> validator, GameDbContext db) =>
+            app.MapPost("/join", async (JoinGameRequest request, IValidator<GameWithJoinGameRequest> validator, GameDbContext db) =>
             {
-                var validationResult = await validator.ValidateAsync(request);
+                var game = await db.Games.FirstOrDefaultAsync(g => g.GameId == request.GameId);
+                var gameWithRequest = new GameWithJoinGameRequest(game, request);
+                var validationResult = await validator.ValidateAsync(gameWithRequest);
                 if (!validationResult.IsValid)
                 {
                     var firstError = validationResult.Errors.First();
@@ -25,8 +28,6 @@ namespace MazeGame.Api.Endpoints
                         _ => Results.BadRequest(new { error = firstError.ErrorMessage, errorCode = firstError.ErrorCode })
                     };
                 }
-
-                var game = await db.Games.FirstOrDefaultAsync(g => g.GameId == request.GameId);
 
                 Debug.Assert(game.TurnNumber == 0, "TurnNumber should be 0");
                 Debug.Assert(game.CurrentPlayer == PlayerType.Hider, "CurrentPlayer should be Hider");

@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Text;
 using System.Diagnostics;
 using MazeGame.Api.Models;
+using MazeGame.Api.Validators;
 using FluentValidation;
 
 namespace MazeGame.Api.Endpoints
@@ -15,10 +16,12 @@ namespace MazeGame.Api.Endpoints
         private const int RevealTurnInterval = 5;
         public static void MapPollEndpoint(this WebApplication app)
         {
-            app.MapGet("/poll", async ([FromQuery] Guid? playerToken, [FromQuery] Guid? gameId, [FromServices] GameDbContext db, [FromServices] IValidator<PollRequest> validator) => {
+            app.MapGet("/poll", async ([FromQuery] Guid? playerToken, [FromQuery] Guid? gameId, [FromServices] GameDbContext db, [FromServices] IValidator<GameWithPollRequest> validator) => {
 
                 var request = new PollRequest(gameId, playerToken);
-                var validationResult = await validator.ValidateAsync(request);
+                var game = db.Games.FirstOrDefault(g => g.GameId == gameId);
+                var gameWithRequest = new GameWithPollRequest(game, request);
+                var validationResult = await validator.ValidateAsync(gameWithRequest);
                 if (!validationResult.IsValid)
                 {
                     var firstError = validationResult.Errors.First();
@@ -29,7 +32,6 @@ namespace MazeGame.Api.Endpoints
                     };
                 }
 
-                var game = db.Games.FirstOrDefault(g => g.GameId == gameId);
                 bool isHider = (game.HiderToken == playerToken);
 
                 if (game.GameStatus == GameStatus.WaitingForPlayer)

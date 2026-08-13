@@ -4,6 +4,7 @@ using MazeGame.Api.Contracts;
 using MazeGame.Api.Data;
 using MazeGame.Api.Models;
 using MazeGame.Api.Services;
+using MazeGame.Api.Validators;
 using Microsoft.EntityFrameworkCore;
 using System.Reflection;
 
@@ -13,8 +14,10 @@ namespace MazeGame.Api.Endpoints
     {
         public static void MapMoveEndpoint(this WebApplication app)
         {
-            app.MapPost("/move", async (MoveRequest request, IValidator<MoveRequest> validator, GameDbContext db) => {
-                var validationResult = await validator.ValidateAsync(request);
+            app.MapPost("/move", async (MoveRequest request, IValidator<GameWithMoveRequest> validator, GameDbContext db) => {
+                var game = db.Games.FirstOrDefault(g => g.GameId == request.GameId);
+                var gameWithRequest = new GameWithMoveRequest(game, request);
+                var validationResult = await validator.ValidateAsync(gameWithRequest);
                 if (!validationResult.IsValid)
                 {
                     var firstError = validationResult.Errors.First();
@@ -25,7 +28,6 @@ namespace MazeGame.Api.Endpoints
                         _ => Results.BadRequest(new { error = firstError.ErrorMessage, errorCode = firstError.ErrorCode })
                     };
                 }
-                var game = db.Games.FirstOrDefault(g => g.GameId == request.GameId);
 
                 PlayerType role = (game.HiderToken == request.PlayerToken) ? PlayerType.Hider : PlayerType.Seeker;
 
