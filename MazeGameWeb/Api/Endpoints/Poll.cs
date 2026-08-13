@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Text;
 using System.Diagnostics;
 using MazeGame.Api.Models;
+using FluentValidation;
 
 namespace MazeGame.Api.Endpoints
 {
@@ -14,22 +15,21 @@ namespace MazeGame.Api.Endpoints
         private const int RevealTurnInterval = 5;
         public static void MapPollEndpoint(this WebApplication app)
         {
-            app.MapGet("/poll", ([FromQuery] Guid? playerToken, [FromQuery] Guid? gameId, [FromServices] GameDbContext db) => {
+            app.MapGet("/poll", async ([FromQuery] Guid? playerToken, [FromQuery] Guid? gameId, [FromServices] GameDbContext db, [FromServices] IValidator<PollRequest> validator) => {
 
-                if (playerToken == null || gameId == null)
+                var request = new PollRequest(gameId, playerToken);
+                var validationResult = await validator.ValidateAsync(request);
+                if (!validationResult.IsValid)
                 {
-                    return Results.BadRequest("playerToken and gameId query parameters are required.");
+                    var firstError = validationResult.Errors.First();
+                    return firstError.ErrorCode switch
+                    {
+                        "NotFound" => Results.NotFound(firstError.ErrorMessage),
+                        _ => Results.BadRequest(firstError.ErrorMessage)
+                    };
                 }
 
                 var game = db.Games.FirstOrDefault(g => g.GameId == gameId);
-                if (game == null)
-                {
-                    return Results.NotFound($"Game with id {gameId} not found.");
-                }
-                if (game.HiderToken != playerToken && game.SeekerToken != playerToken)
-                {
-                    return Results.BadRequest("CurrentPlayer must be either Hider or Seeker.");
-                }
                 bool isHider = (game.HiderToken == playerToken);
 
                 if (game.GameStatus == GameStatus.WaitingForPlayer)
