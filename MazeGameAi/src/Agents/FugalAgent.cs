@@ -7,12 +7,13 @@ using System.Text;
 
 namespace MazeGameAi.src.Agents
 {
-    public class SeekerAgent : IAgent
-    {   
+    // This is agent is designed to move away from the opponent, uses Dijkstra's algorithm to find the best path away from the opponent.
+    public class FugalAgent : IAgent 
+    {
         public Direction decideMove(PollResponse gameState)
         {
             Dijkstra dijkstra = new Dijkstra();
-            return dijkstra.NextMove(true, gameState);
+            return dijkstra.NextMoveAwayFromOpponent(gameState);
         }
 
     }

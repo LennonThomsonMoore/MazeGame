@@ -12,8 +12,19 @@ namespace MazeGameAi.src.PathFinding
 
         private static PlayerPosition? targetPosition = null;
 
-        //Performs Dijkstra's algorithm to find the shortest path from the player's position to the target position in the maze.
-        public Direction NextMove(bool towardsOpponent, PollResponse gameState)
+        // Performs Dijkstra's algorithm to find the shortest path from the player's position toward the opponent's position in the maze.
+        public Direction NextMoveTowardsOpponent(PollResponse gameState)
+        {
+            return NextMove(towardsOpponent: true, gameState);
+        }
+
+        // Performs Dijkstra's algorithm to find the shortest path from the player's position away from the opponent's position in the maze.
+        public Direction NextMoveAwayFromOpponent(PollResponse gameState)
+        {
+            return NextMove(towardsOpponent: false, gameState);
+        }
+        
+        private Direction NextMove(bool towardsOpponent, PollResponse gameState)
         {
             Console.WriteLine("Calculating next move using Dijkstra's algorithm...");
             Debug.Assert(gameState.Maze != null, "Maze is null");
