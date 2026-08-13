@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 using MazeGame.Api.Models;
 using MazeGame.Api.Contracts;
@@ -7,37 +8,44 @@ using System.Diagnostics;
 
 namespace MazeGameAi.src.PathFinding
 {
-    public class Dijkstra
+    public static class Dijkstra
     {
 
-        private static PlayerPosition? targetPosition = null;
-
-        // Performs Dijkstra's algorithm to find the shortest path from the player's position toward the opponent's position in the maze.
-        public Direction NextMoveTowardsOpponent(PollResponse gameState)
+        // Performs Dijkstra's algorithm to find the shortest path from the player's position toward the target's position in the maze.
+        public static Direction NextMoveTowardsTarget(Cell[][] maze, PlayerPosition yourPosition, PlayerPosition? targetPosition, IEnumerable<PlayerPosition>? positionsToAvoid = null)
         {
-            return NextMove(towardsOpponent: true, gameState);
+            return NextMove(towardsOpponent: true, maze, yourPosition, targetPosition, positionsToAvoid);
         }
 
-        // Performs Dijkstra's algorithm to find the shortest path from the player's position away from the opponent's position in the maze.
-        public Direction NextMoveAwayFromOpponent(PollResponse gameState)
+        // Performs Dijkstra's algorithm to find the shortest path from the player's position away from the target's position in the maze.
+        public static Direction NextMoveAwayFromTarget(Cell[][] maze, PlayerPosition yourPosition, PlayerPosition? targetPosition, IEnumerable<PlayerPosition>? positionsToAvoid = null)
         {
-            return NextMove(towardsOpponent: false, gameState);
+            return NextMove(towardsOpponent: false, maze, yourPosition, targetPosition, positionsToAvoid);
         }
-        
-        private Direction NextMove(bool towardsOpponent, PollResponse gameState)
+
+        private static Direction NextMove(bool towardsOpponent, Cell[][] maze, PlayerPosition yourPosition, PlayerPosition? targetPosition, IEnumerable<PlayerPosition>? positionsToAvoid)
         {
             Console.WriteLine("Calculating next move using Dijkstra's algorithm...");
-            Debug.Assert(gameState.Maze != null, "Maze is null");
-            Cell[][] maze = gameState.Maze;
-            PlayerPosition yourPosition = gameState.YourPosition;
+            if (maze == null) throw new ArgumentNullException(nameof(maze), "Maze is null");
+            if (yourPosition == null) throw new ArgumentNullException(nameof(yourPosition), "Your position is null");
+            //if not target pick random direction
             if (targetPosition == null)
             {
-                targetPosition = yourPosition;
+                return (Direction) new Random().Next(0, 4);
             }
-            if (gameState.OpponentPosition != null)
+
+            HashSet<(int Row, int Col)> avoidSet = positionsToAvoid?
+                .Select(p => (p.Row, p.Column))
+                .ToHashSet() ?? new HashSet<(int, int)>();
+
+            bool IsPassable(int row, int col)
             {
-                targetPosition = gameState.OpponentPosition;
+                return row >= 0 && row < maze.Length
+                    && col >= 0 && col < maze[0].Length
+                    && maze[row][col] != Cell.Wall
+                    && !avoidSet.Contains((row, col));
             }
+
             int[][] distance = new int[maze.Length][];
             for (int i = 0; i < maze.Length; i++)
             {
@@ -63,7 +71,7 @@ namespace MazeGameAi.src.PathFinding
                 {
                     int newRow = row + dRow[i];
                     int newCol = col + dCol[i];
-                    if (newRow >= 0 && newRow < maze.Length && newCol >= 0 && newCol < maze[0].Length && maze[newRow][newCol] != Cell.Wall)
+                    if (IsPassable(newRow, newCol))
                     {
                         int newDist = distance[row][col] + 1;
                         if (newDist < distance[newRow][newCol])
@@ -82,7 +90,7 @@ namespace MazeGameAi.src.PathFinding
             {
                 int newRow = yourPosition.Row + dRow[i];
                 int newCol = yourPosition.Column + dCol[i];
-                if (newRow >= 0 && newRow < maze.Length && newCol >= 0 && newCol < maze[0].Length && maze[newRow][newCol] != Cell.Wall)
+                if (IsPassable(newRow, newCol))
                 {
                     int neighborDistance = distance[newRow][newCol];
                     if (towardsOpponent)
@@ -104,7 +112,7 @@ namespace MazeGameAi.src.PathFinding
                 }
             }
 
-            Direction resolvedMove = nextMove ?? Direction.North;
+            Direction resolvedMove = nextMove ?? (Direction)new Random().Next(0, 4);
             Console.WriteLine($"Calculated next move using Dijkstra's algorithm. {resolvedMove} with {minDistance} distance. ");
             return resolvedMove;
         }

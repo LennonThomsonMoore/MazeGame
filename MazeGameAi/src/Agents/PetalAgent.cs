@@ -9,11 +9,15 @@ namespace MazeGameAi.src.Agents
 {
     // This is agent is designed to move towards the opponent, uses Dijkstra's algorithm to find the best path towards the opponent.
     public class PetalAgent : IAgent
-    {   
+    {
+        private PlayerPosition lastSeenOpponentPosition;
         public Direction decideMove(PollResponse gameState)
         {
-            Dijkstra dijkstra = new Dijkstra();
-            return dijkstra.NextMoveTowardsOpponent(gameState);
+            if (gameState.OpponentPosition != null)
+            {
+                lastSeenOpponentPosition = gameState.OpponentPosition;
+            }
+            return Dijkstra.NextMoveTowardsTarget(gameState.Maze, gameState.YourPosition, lastSeenOpponentPosition);
         }
 
     }

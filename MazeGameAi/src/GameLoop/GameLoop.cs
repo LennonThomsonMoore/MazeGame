@@ -45,11 +45,11 @@ namespace MazeGameAi.src.GameLoop
 
             if (_Role == PlayerType.Hider)
             {
-                agent = new HiderAgent();
+                agent = new FourClustersAgent();
             }
             else
             {
-                agent = new SeekerAgent();
+                agent = new PetalAgent();
             }
 
             //Wait for game to start
@@ -78,6 +78,7 @@ namespace MazeGameAi.src.GameLoop
 
                 if (response.CurrentPlayer == _Role)
                 {
+                    Console.WriteLine("I am a " + _Role.ToString());
                     DrawGameState(response);
                     Direction direction = agent.decideMove(response);
                     var response2 = await MazeGameApiClient.MoveAsync(_PlayerToken, _GameId, direction);
