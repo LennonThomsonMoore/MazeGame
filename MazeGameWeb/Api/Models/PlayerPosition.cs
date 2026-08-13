@@ -15,10 +15,17 @@ namespace MazeGame.Api.Models
             Column = column;
         }
 
-        public bool Equals(PlayerPosition other)
+        public override bool Equals(object obj)
         {
-            if (other == null) return false;
+            if (obj == null || GetType() != obj.GetType()) return false;
+            var other = (PlayerPosition)obj;
             return this.Row == other.Row && this.Column == other.Column;
         }
+
+        public override int GetHashCode()
+        {
+            return HashCode.Combine(Row, Column);
+        }
+
     }
 }
