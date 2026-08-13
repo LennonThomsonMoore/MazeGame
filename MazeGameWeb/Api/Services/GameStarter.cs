@@ -13,43 +13,36 @@ namespace MazeGame.Api.Services
             PlacePlayers(game);
             return game;
         }
-        //Uses a iterative approach to find a valid position for the players in the maze.
+
+        //Places players in game where players cannot be place diagonally or othorgonally adjacent or inside walls.
         private static void PlacePlayers(Game game)
         {
-            var maze = game.Maze;
+            // make a list of all empty cells
+            // pick one at random and place the hider there
+            // then remove all cells that are adjacent to the hider from the list
+            // pick one at random for the seeker
+            var emptyCells = new List<(int x, int y)>();
+            for (int x = 0; x < game.Maze!.Length; x++)
+            {
+                for (int y = 0; y < game.Maze[x].Length; y++)
+                {
+                    if (game.Maze[x][y] == Cell.Empty)
+                    {
+                        emptyCells.Add((x, y));
+                    }
+                }
+            }
+
             Random rng = new Random();
-            //Calculate Hider Position
-            PlayerPosition hiderPos;
-            while (true)
-            {
-                int Row = rng.Next(Maze.FirstIndex, Maze.LastIndex + 1);
-                int Col = rng.Next(Maze.FirstIndex, Maze.LastIndex + 1);
-                //Hider can only be placed on empty cell
-                if (maze[Row][Col] == Cell.Empty)
-                {
-                    hiderPos = new PlayerPosition(Row, Col);
-                    break;
-                }
-            }
+            var hiderIndex = rng.Next(emptyCells.Count);
+            var hiderPos = emptyCells[hiderIndex];
+            emptyCells.RemoveAll(cell => Math.Abs(cell.x - hiderPos.x) <= 1 && Math.Abs(cell.y - hiderPos.y) <= 1);
 
+            var seekerIndex = rng.Next(emptyCells.Count);
+            var seekerPos = emptyCells[seekerIndex];
 
-
-            //Calculate Seeker Position
-            PlayerPosition seekerPos;
-            while (true)
-            {
-                int Row = rng.Next(Maze.FirstIndex, Maze.LastIndex + 1);
-                int Col = rng.Next(Maze.FirstIndex, Maze.LastIndex + 1);
-                //Seeker can only be placed on empty cell and not on the same, orthogonally adjacent or diagonally adjacent cell as the hider
-                if (maze[Row][Col] == Cell.Empty && Math.Abs(Row - hiderPos.Row) > 1 && Math.Abs(Col - hiderPos.Column) > 1)
-                {
-                    seekerPos = new PlayerPosition(Row, Col);
-                    break;
-                }
-            }
-
-            game.HiderPosition = hiderPos;
-            game.SeekerPosition = seekerPos;
+            game.HiderPosition = new PlayerPosition(hiderPos.x, hiderPos.y);
+            game.SeekerPosition = new PlayerPosition(seekerPos.x, seekerPos.y);
         }
     }
 }
