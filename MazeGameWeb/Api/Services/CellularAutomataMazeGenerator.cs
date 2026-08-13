@@ -7,9 +7,9 @@ namespace MazeGame.Api.Services
     // smoothed using birth/survival rules until it stabilizes into cave-like, maze-like corridors.
     public class CellularAutomataMazeGenerator : IMazeGenerator
     {
-        private const int Size = MazeGenerator.size;
-        private const int FirstIndex = MazeGenerator.FirstIndex;
-        private const int LastIndex = MazeGenerator.LastIndex;
+        private const int Size = Maze.size;
+        private const int FirstIndex = Maze.FirstIndex;
+        private const int LastIndex = Maze.LastIndex;
 
         // Probability that a cell starts as a wall.
         private const double WallProbability = 0.45;

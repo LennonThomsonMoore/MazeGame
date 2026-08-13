@@ -7,8 +7,8 @@ namespace MazeGame.Api.Services
     // indices between them represent the wall/passage that connects two adjacent cells.
     public class WilsonMazeGenerator : IMazeGenerator
     {
-        private const int size = MazeGenerator.size;
-        private const int LastIndex = MazeGenerator.LastIndex;
+        private const int size = Maze.size;
+        private const int LastIndex = Maze.LastIndex;
 
         private static readonly Random random = new Random();
 

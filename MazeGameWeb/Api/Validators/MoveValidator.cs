@@ -95,10 +95,10 @@ namespace MazeGame.Api.Validators
                         });
                         return;
                 }
-                if (wantedPosition.Row > MazeGenerator.LastIndex    || 
-                    wantedPosition.Column > MazeGenerator.LastIndex || 
-                    wantedPosition.Row < MazeGenerator.FirstIndex   || 
-                    wantedPosition.Column < MazeGenerator.FirstIndex
+                if (wantedPosition.Row > Maze.LastIndex    || 
+                    wantedPosition.Column > Maze.LastIndex || 
+                    wantedPosition.Row < Maze.FirstIndex   || 
+                    wantedPosition.Column < Maze.FirstIndex
                     )
                 {
                     context.AddFailure(new ValidationFailure("Direction", "Illegal move.")
@@ -108,8 +108,8 @@ namespace MazeGame.Api.Validators
                     return;
                 }
 
-                Debug.Assert(wantedPosition.Row >= MazeGenerator.FirstIndex && wantedPosition.Row <= MazeGenerator.LastIndex, "Wanted position row is out of bounds.");
-                Debug.Assert(wantedPosition.Column >= MazeGenerator.FirstIndex && wantedPosition.Column <= MazeGenerator.LastIndex, "Wanted position column is out of bounds.");
+                Debug.Assert(wantedPosition.Row >= Maze.FirstIndex && wantedPosition.Row <= Maze.LastIndex, "Wanted position row is out of bounds.");
+                Debug.Assert(wantedPosition.Column >= Maze.FirstIndex && wantedPosition.Column <= Maze.LastIndex, "Wanted position column is out of bounds.");
                 Debug.Assert(game.Maze != null, "Maze should not be null.");
                 // 6. Destination square is not a wall.
                 if (game.Maze[wantedPosition.Row][wantedPosition.Column] == Cell.Wall)
