@@ -38,7 +38,7 @@ namespace MazeGame.Api.Contracts
             this.Winner = Winner;
         }
 
-        public static PollResponse ForWaitingForPlayer(Guid gameId, GameStatus status)
+        public static PollResponse ForWaitingForPlayer(Guid gameId)
         {
             return new PollResponse(
                 gameId,
@@ -47,13 +47,13 @@ namespace MazeGame.Api.Contracts
                 CurrentPlayer: default,
                 TurnNumber: 0,
                 MovesUntilReveal: 0,
-                Status: status,
+                Status: GameStatus.WaitingForPlayer,
                 Winner: null,
                 Maze: null
             );
         }
 
-        public static PollResponse ForGameOver(Guid gameId, GameStatus status, PlayerType winner)
+        public static PollResponse ForGameOver(Guid gameId, PlayerType winner)
         {
             return new PollResponse(
                 gameId,
@@ -62,7 +62,7 @@ namespace MazeGame.Api.Contracts
                 CurrentPlayer: default,
                 TurnNumber: 0,
                 MovesUntilReveal: 0,
-                Status: status,
+                Status: GameStatus.Completed,
                 Winner: winner,
                 Maze: null
             );

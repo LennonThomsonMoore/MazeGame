@@ -34,7 +34,7 @@ namespace MazeGame.Api.Endpoints
 
                 if (game.GameStatus == GameStatus.WaitingForPlayer)
                 { 
-                    var response = PollResponse.ForWaitingForPlayer(game.GameId, game.GameStatus);
+                    var response = PollResponse.ForWaitingForPlayer(game.GameId);
                     return Results.Ok(response);
                 }
 
@@ -44,7 +44,7 @@ namespace MazeGame.Api.Endpoints
                     {
                         return Results.Problem("Winner should not be null when game is completed.");
                     }
-                    var response = PollResponse.ForGameOver(game.GameId, game.GameStatus, game.Winner.Value);
+                    var response = PollResponse.ForGameOver(game.GameId, game.Winner.Value);
                     return Results.Ok(response);
                 }
 
