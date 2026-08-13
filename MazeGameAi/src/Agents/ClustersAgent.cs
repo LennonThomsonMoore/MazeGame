@@ -47,8 +47,8 @@ namespace MazeGameAi.src.Agents
 
 			if (opponentPosition == null && lastSeenOpponentPosition == null)
 			{
-				return (Direction)new Random().Next(0, 4);
-			}
+				lastSeenOpponentPosition = new PlayerPosition(maze.Length / 2, maze[0].Length / 2);
+            }
 
 			int opponentCluster = _clusterMap![lastSeenOpponentPosition!.Row][lastSeenOpponentPosition.Column];
 

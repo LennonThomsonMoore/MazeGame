@@ -9,7 +9,7 @@ namespace MazeGame.Api.Services
     {
         private const int size = MazeGenerator.size;
         private const int LastIndex = MazeGenerator.LastIndex;
-        private const int InnerWallsToRemove = 5;
+        private const int InnerWallsToRemove = 10;
 
         private static readonly Random random = new Random();
 
