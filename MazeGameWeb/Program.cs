@@ -26,5 +26,6 @@ app.MapCreateGameEndpoint();
 app.MapJoinLobbyEndpoint();
 app.MapMoveEndpoint();
 app.MapPollEndpoint();
+app.MapWaitingGames();
 
 app.Run();

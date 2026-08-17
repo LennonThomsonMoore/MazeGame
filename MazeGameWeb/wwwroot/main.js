@@ -128,6 +128,13 @@
     function showScreen(id) {
         document.querySelectorAll(".screen").forEach(s => s.classList.remove("active"));
     document.getElementById(id).classList.add("active");
+
+    // Keep the open-games list fresh only while the start screen is visible.
+    if (id === "screen-start") {
+        startWaitingPolling();
+    } else {
+        stopWaitingPolling();
+    }
 }
 
     /* ============================================================
@@ -279,6 +286,101 @@ function notifyOpponentOfMove() {
     document.getElementById("lobby-gameid").textContent = state.gameId ?? "—";
     document.getElementById("lobby-role").textContent = state.role ?? "—";
     document.getElementById("lobby-status").textContent = "Waiting for player";
+}
+
+    /* ============================================================
+       Open games (join online game)
+       ============================================================ */
+    function shortId(id) {
+        const s = String(id);
+    return s.length > 8 ? s.slice(0, 8) + "…" : s;
+}
+
+    async function listWaitingGames() {
+        try {
+        const games = await apiGetRequest("/games/waiting");
+    renderWaitingGames(games);
+        } catch {
+        toast("Unable to load open games.");
+        }
+}
+
+    function renderWaitingGames(games) {
+        const list = document.getElementById("waiting-games-list");
+    const empty = document.getElementById("waiting-empty");
+    list.innerHTML = "";
+
+    const open = Array.isArray(games) ? games.filter(g => g && g.gameId != null) : [];
+    if (open.length === 0) {
+        empty.classList.remove("hidden");
+    return;
+    }
+    empty.classList.add("hidden");
+
+    for (const g of open) {
+        const id = String(g.gameId);
+    const li = document.createElement("li");
+    li.className = "row";
+    li.style.justifyContent = "space-between";
+    li.style.padding = "8px 0";
+
+    const label = document.createElement("span");
+    label.className = "chip";
+    label.innerHTML = `Game: <strong>${shortId(id)}</strong>`;
+
+    const btn = document.createElement("button");
+    btn.className = "accent";
+    btn.textContent = "Join";
+    btn.addEventListener("click", () => joinWaitingGame(id, btn));
+
+    li.appendChild(label);
+    li.appendChild(btn);
+    list.appendChild(li);
+    }
+}
+
+    async function joinWaitingGame(gameId, btn) {
+        if (btn) btn.disabled = true;
+    try {
+        const data = await joinGame(gameId);
+    state.gameId = String(data.gameId);
+    state.playerToken = String(data.playerToken);
+    state.role = PlayerType[data.role];
+    state.gameStatus = GameStatus[data.status];
+    saveGame();
+    doPoll();
+    setupPeerConnection();
+    if (state.gameStatus === "active") {
+        showScreen("screen-game");
+        } else {
+        renderLobby();
+        }
+    } catch (err) {
+        if (err.status === 404) {
+        toast("That game is no longer available.");
+    listWaitingGames();
+        } else if (err.status === 409) {
+        toast((err.data && err.data.error) || "That game is already full or started.");
+    listWaitingGames();
+        } else {
+        toast("Unable to join game. Please try again.");
+        }
+    } finally {
+        if (btn) btn.disabled = false;
+    }
+}
+
+    let waitingPollTimer = null;
+    function startWaitingPolling() {
+        listWaitingGames();
+    if (waitingPollTimer) return;
+    waitingPollTimer = setInterval(listWaitingGames, 4000);
+}
+    function stopWaitingPolling() {
+        if (waitingPollTimer) {
+        clearInterval(waitingPollTimer);
+    waitingPollTimer = null;
+    }
 }
 
     /* ============================================================
@@ -579,6 +681,17 @@ document.getElementById("btn-copy-lobby").addEventListener("click", async () => 
 
     document.getElementById("btn-leave-lobby").addEventListener("click", returnToStart);
 
+document.getElementById("btn-refresh-waiting").addEventListener("click", async () => {
+    const btn = document.getElementById("btn-refresh-waiting");
+    const spin = document.getElementById("waiting-spin");
+    setButtonLoading(btn, spin, true);
+    try {
+        await listWaitingGames();
+    } finally {
+        setButtonLoading(btn, spin, false);
+    }
+});
+
 document.getElementById("btn-resume").addEventListener("click", () => {
     const saved = loadSavedGame();
     if (!saved) return;
@@ -629,4 +742,5 @@ document.addEventListener("keydown", (e) => {
 });
 
     // Init
+    startWaitingPolling();
     checkRecovery();
