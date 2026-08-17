@@ -47,7 +47,6 @@
     moveInProgress: false,
 };
 
-    let pollTimer = null;
 
     /* ============================================================
        API utility layer
@@ -150,17 +149,74 @@
         document.getElementById("game-error").classList.add("hidden");
 }
 
+   /* ============================================================
+      Polling socket
+      ============================================================ */
+
+    function peerIdFor(gameId, role) {
+        // role: "Hider" or "Seeker"
+        return `maze-${gameId}-${role.toLowerCase()}`;
+    }
+
+    function otherRole(role) {
+        return role === "hider" ? "seeker" : "hider";
+}
+
+let peer = null;
+let peerConn = null;
+
+function wireConnection(conn) {
+    if (peerConn && peerConn.open) {
+        // Already have a live connection; ignore a duplicate.
+        return;
+    }
+    peerConn = conn;
+    conn.on("open", () => {
+        doPoll(); // opponent is now connected - resync immediately (e.g. lobby -> active)
+    });
+    conn.on("data", (msg) => {
+        if (msg === "move") doPoll();
+    });
+    conn.on("close", () => {
+        if (peerConn === conn) peerConn = null;
+    });
+}
+
+function setupPeerConnection() {
+    if (peer || !state.gameId || !state.role) return;
+
+    const myPeerId = peerIdFor(state.gameId, state.role);
+    const remotePeerId = peerIdFor(state.gameId, otherRole(state.role));
+
+    peer = new Peer(myPeerId);
+
+    peer.on("open", () => {
+        wireConnection(peer.connect(remotePeerId));
+    });
+    peer.on("connection", (conn) => wireConnection(conn));
+    peer.on("error", (err) => {
+        // e.g. "peer-unavailable" if the opponent hasn't opened their peer yet;
+        // harmless - they will connect to us once ready.
+        console.warn("PeerJS error:", err.type);
+    });
+}
+
+function notifyOpponentOfMove() {
+    if (peerConn && peerConn.open) {
+        peerConn.send("move");
+    }
+}
+
+
+
+
+    
+
+
     /* ============================================================
        Polling loop (single interval, no overlap)
        ============================================================ */
-    function startPolling() {
-        stopPolling();
-    doPoll();
-    pollTimer = setInterval(doPoll, 2000);
-}
-    function stopPolling() {
-    if (pollTimer) {clearInterval(pollTimer); pollTimer = null; }
-}
+
 
     let pollInFlight = false;
     async function doPoll() {
@@ -355,7 +411,8 @@
     updateControls();
     try {
         await move(dir);
-    toast("Move submitted.");
+        toast("Move submitted.");
+        notifyOpponentOfMove();
     } catch (err) {
         handleMoveError(err);
     } finally {
@@ -411,7 +468,6 @@
        Reset to start
        ============================================================ */
     function returnToStart() {
-        stopPolling();
     document.getElementById("modal").classList.remove("active");
     Object.assign(state, {
         gameId: null, playerToken: null, role: null, gameStatus: null,
@@ -456,7 +512,8 @@ document.getElementById("btn-create").addEventListener("click", async () => {
     state.gameStatus = GameStatus[data.status];
     saveGame();
     renderLobby();
-    startPolling();
+        doPoll();
+        setupPeerConnection();
     } catch {
         toast("Unable to create game. Please try again.");
     } finally {
@@ -485,7 +542,8 @@ document.getElementById("btn-join").addEventListener("click", async () => {
     state.role = PlayerType[data.role];
     state.gameStatus = GameStatus[data.status];
     saveGame();
-    startPolling();
+        doPoll();
+        setupPeerConnection();
     if (state.gameStatus === "active") {
         showScreen("screen-game");
         } else {
@@ -528,7 +586,8 @@ document.getElementById("btn-resume").addEventListener("click", () => {
     state.playerToken = saved.playerToken;
     state.role = saved.role;
     state.gameStatus = saved.gameStatus;
-    startPolling();
+    doPoll();
+    setupPeerConnection();
 });
 
 document.getElementById("btn-clear-recovery").addEventListener("click", () => {

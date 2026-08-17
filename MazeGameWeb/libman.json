@@ -1,0 +1,13 @@
+{
+  "version": "1.0",
+  "defaultProvider": "cdnjs",
+  "libraries": [
+    {
+      "library": "peerjs@1.5.4",
+      "destination": "wwwroot/lib/peerjs/",
+      "files": [
+        "peerjs.min.js"
+      ]
+    }
+  ]
+}
