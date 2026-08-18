@@ -223,10 +223,66 @@
 <body>
 <div class="app">
 
-    <!-- START SCREEN -->
-    <section id="screen-start" class="screen active">
+    <!-- LOGIN SCREEN -->
+    <section id="screen-login" class="screen active">
         <div class="card">
             <h1>Hide and Seek Maze</h1>
+            <p class="desc">Sign in to create or join games.</p>
+
+            <label for="login-username">Username</label>
+            <input type="text" id="login-username" placeholder="Username" autocomplete="username" />
+            <label for="login-password">Password</label>
+            <input type="password" id="login-password" placeholder="Password" autocomplete="current-password" />
+
+            <div class="row" style="margin-top:12px;">
+                <button id="btn-login">
+                    <span id="login-spin" class="spinner hidden"></span>Log In
+                </button>
+            </div>
+            <div id="login-error" class="form-error"></div>
+
+            <div class="divider"></div>
+
+            <p class="desc">Don't have an account?</p>
+            <button id="btn-show-register" class="secondary">Create Account</button>
+        </div>
+    </section>
+
+    <!-- REGISTER SCREEN -->
+    <section id="screen-register" class="screen">
+        <div class="card">
+            <h1>Create Account</h1>
+            <p class="desc">Choose a username (3-32 characters) and a password (min 8 characters).</p>
+
+            <label for="register-username">Username</label>
+            <input type="text" id="register-username" placeholder="Username" autocomplete="username" />
+            <label for="register-password">Password</label>
+            <input type="password" id="register-password" placeholder="Password" autocomplete="new-password" />
+
+            <div class="row" style="margin-top:12px;">
+                <button id="btn-register">
+                    <span id="register-spin" class="spinner hidden"></span>Create Account
+                </button>
+            </div>
+            <div id="register-error" class="form-error"></div>
+
+            <div class="divider"></div>
+
+            <p class="desc">Already have an account?</p>
+            <button id="btn-show-login" class="secondary">Log In</button>
+        </div>
+    </section>
+
+    <!-- START SCREEN -->
+    <section id="screen-start" class="screen">
+        <div class="card">
+            <div class="row" style="justify-content: space-between;">
+                <h1 style="margin:0;">Hide and Seek Maze</h1>
+                <div class="row">
+                    <span id="start-username" class="chip"></span>
+                    <button id="btn-logout" class="secondary">Log Out</button>
+                </div>
+            </div>
             <p class="desc">
                 A two-player maze game. One player is the <strong>Hider</strong>, the other the
                 <strong>Seeker</strong>. Take turns moving through the maze one square at a time.

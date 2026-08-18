@@ -23,7 +23,7 @@ namespace MazeGame.Api.Endpoints
                     .Select(g => new { gameId = g.GameId, gameStatus = g.GameStatus })
                     .ToList();
                 return Results.Ok(waitingGames);
-            });
+            }).RequireAuthorization();
         }
     }
 }

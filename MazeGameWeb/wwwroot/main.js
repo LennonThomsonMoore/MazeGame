@@ -27,6 +27,7 @@
 }
 
     const STORAGE_KEY = "hideAndSeekGame";
+    const AUTH_USERNAME_KEY = "hideAndSeekUsername";
 
     /* ============================================================
        State
@@ -55,6 +56,7 @@
     const res = await fetch(path, {
         method: "POST",
     headers: {"Content-Type": "application/json" },
+    credentials: "same-origin",
     body: JSON.stringify(body || { }),
     });
 
@@ -65,6 +67,7 @@
     const query = new URLSearchParams(queryParams || { }).toString();
     const res = await fetch(query ? `${path}?${query}` : path, {
         method: "GET",
+    credentials: "same-origin",
     });
 
     return handleApiResponse(res);
@@ -101,6 +104,19 @@
     playerToken: state.playerToken,
     direction,
     });
+}
+
+    function registerUser(username, password) {
+    return apiRequest("/auth/register", {username, password});
+}
+    function loginUser(username, password) {
+    return apiRequest("/auth/login", {username, password});
+}
+    function logoutUser() {
+    return apiRequest("/auth/logout", { });
+}
+    function fetchCurrentUser() {
+    return apiGetRequest("/auth/me");
 }
 
     /* ============================================================
@@ -602,6 +618,94 @@ function notifyOpponentOfMove() {
     spin.classList.toggle("hidden", !loading);
 }
 
+function enterApp(username) {
+    localStorage.setItem(AUTH_USERNAME_KEY, username);
+    document.getElementById("start-username").textContent = username;
+    showScreen("screen-start");
+    checkRecovery();
+}
+
+document.getElementById("btn-show-register").addEventListener("click", () => {
+    document.getElementById("register-error").textContent = "";
+    showScreen("screen-register");
+});
+
+document.getElementById("btn-show-login").addEventListener("click", () => {
+    document.getElementById("login-error").textContent = "";
+    showScreen("screen-login");
+});
+
+document.getElementById("btn-register").addEventListener("click", async () => {
+    const usernameEl = document.getElementById("register-username");
+    const passwordEl = document.getElementById("register-password");
+    const errEl = document.getElementById("register-error");
+    const btn = document.getElementById("btn-register");
+    const spin = document.getElementById("register-spin");
+    errEl.textContent = "";
+
+    const username = usernameEl.value.trim();
+    const password = passwordEl.value;
+    if (!username || !password) {
+        errEl.textContent = "Please enter a username and password.";
+        return;
+    }
+
+    setButtonLoading(btn, spin, true);
+    try {
+        await registerUser(username, password);
+        await loginUser(username, password);
+        passwordEl.value = "";
+        enterApp(username);
+    } catch (err) {
+        errEl.textContent = (err.data && err.data.error) || "Unable to create account. Please try again.";
+    } finally {
+        setButtonLoading(btn, spin, false);
+    }
+});
+
+document.getElementById("btn-login").addEventListener("click", async () => {
+    const usernameEl = document.getElementById("login-username");
+    const passwordEl = document.getElementById("login-password");
+    const errEl = document.getElementById("login-error");
+    const btn = document.getElementById("btn-login");
+    const spin = document.getElementById("login-spin");
+    errEl.textContent = "";
+
+    const username = usernameEl.value.trim();
+    const password = passwordEl.value;
+    if (!username || !password) {
+        errEl.textContent = "Please enter your username and password.";
+        return;
+    }
+
+    setButtonLoading(btn, spin, true);
+    try {
+        const data = await loginUser(username, password);
+        passwordEl.value = "";
+        enterApp(data.username || username);
+    } catch (err) {
+        errEl.textContent = err.status === 401
+            ? "Invalid username or password."
+            : (err.data && err.data.error) || "Unable to log in. Please try again.";
+    } finally {
+        setButtonLoading(btn, spin, false);
+    }
+});
+
+document.getElementById("login-password").addEventListener("keydown", (e) => {
+    if (e.key === "Enter") document.getElementById("btn-login").click();
+});
+
+document.getElementById("register-password").addEventListener("keydown", (e) => {
+    if (e.key === "Enter") document.getElementById("btn-register").click();
+});
+
+document.getElementById("btn-logout").addEventListener("click", async () => {
+    try { await logoutUser(); } catch { /* ignore, still clear client state */ }
+    localStorage.removeItem(AUTH_USERNAME_KEY);
+    showScreen("screen-login");
+});
+
 document.getElementById("btn-create").addEventListener("click", async () => {
     const btn = document.getElementById("btn-create");
     const spin = document.getElementById("create-spin");
@@ -742,5 +846,13 @@ document.addEventListener("keydown", (e) => {
 });
 
     // Init
-    startWaitingPolling();
+    (async function initAuth() {
+        try {
+            const me = await fetchCurrentUser();
+            enterApp(me.username);
+        } catch {
+            localStorage.removeItem(AUTH_USERNAME_KEY);
+            showScreen("screen-login");
+        }
+    })();
     checkRecovery();

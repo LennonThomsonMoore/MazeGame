@@ -24,13 +24,28 @@ namespace MazeGame.Api.Models
 
             return new User(id, username, passwordHash);
         }
-        
-        private User(Guid id, string username, string passwordHash) {
+
+        private User(Guid id, string username, string passwordHash)
+        {
             this.Id = id;
             this.Username = username;
             this.PasswordHash = passwordHash;
             this.CreatedAt = DateTimeOffset.UtcNow;
             this.UpdatedAt = DateTimeOffset.UtcNow;
+        }
+
+        public override bool Equals(object? obj)
+        {
+            if (obj is not User other)
+            {
+                return false;
+            }
+            return this.Id == other.Id;
+        }
+
+        public override int GetHashCode()
+        {
+            return this.Id.GetHashCode();
         }
     }
 }

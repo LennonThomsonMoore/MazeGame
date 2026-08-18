@@ -56,8 +56,8 @@ namespace MazeGame.Api.Endpoints
                 );
                 return Results.Ok(response);
 
-            });
-            
+            }).RequireAuthorization();
+
 
         }
     }
