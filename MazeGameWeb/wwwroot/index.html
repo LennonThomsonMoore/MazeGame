@@ -280,6 +280,7 @@
                 <h1 style="margin:0;">Hide and Seek Maze</h1>
                 <div class="row">
                     <span id="start-username" class="chip"></span>
+                    <button id="btn-profile" class="secondary">Profile</button>
                     <button id="btn-logout" class="secondary">Log Out</button>
                 </div>
             </div>
@@ -323,6 +324,23 @@
             </div>
             <ul id="waiting-games-list" style="list-style:none; padding:0; margin:12px 0 0;"></ul>
             <p id="waiting-empty" class="reveal-note">No open games right now</p>
+        </div>
+    </section>
+
+    <!-- PROFILE SCREEN -->
+    <section id="screen-profile" class="screen">
+        <div class="card">
+            <div class="row" style="justify-content: space-between;">
+                <h2 style="margin:0;">My Games</h2>
+                <button id="btn-refresh-profile" class="secondary">
+                    <span id="profile-spin" class="spinner hidden"></span>Refresh
+                </button>
+            </div>
+            <p class="desc">Games you have created or joined.</p>
+            <ul id="profile-games-list" style="list-style:none; padding:0; margin:12px 0 0;"></ul>
+            <p id="profile-empty" class="reveal-note hidden">You haven't played any games yet.</p>
+            <div class="divider"></div>
+            <button id="btn-profile-back" class="secondary">Back to Start</button>
         </div>
     </section>
 

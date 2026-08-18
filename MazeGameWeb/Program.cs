@@ -79,5 +79,6 @@ app.MapRegisterEndpoint();
 app.MapLoginEndpoints();
 app.MapLogoutEndpoint();
 app.MapMeEndpoint();
+app.MapListMeGamesEndpoint();
 
 app.Run();

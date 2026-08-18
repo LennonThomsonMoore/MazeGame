@@ -3,7 +3,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
 
-namespace MazeGameWeb.Api.Migrations
+namespace MazeGame.Api.Migrations
 {
     /// <inheritdoc />
     public partial class InitialCreate : Migration
@@ -27,6 +27,8 @@ namespace MazeGameWeb.Api.Migrations
                     Winner = table.Column<int>(type: "INTEGER", nullable: true),
                     HiderToken = table.Column<Guid>(type: "TEXT", nullable: true),
                     SeekerToken = table.Column<Guid>(type: "TEXT", nullable: true),
+                    HiderUserId = table.Column<Guid>(type: "TEXT", nullable: true),
+                    SeekerUserId = table.Column<Guid>(type: "TEXT", nullable: true),
                     CreatedAt = table.Column<DateTimeOffset>(type: "TEXT", nullable: false),
                     UpdatedAt = table.Column<DateTimeOffset>(type: "TEXT", nullable: false)
                 },

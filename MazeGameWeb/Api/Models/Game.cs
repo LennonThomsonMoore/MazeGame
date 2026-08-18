@@ -16,6 +16,8 @@ namespace MazeGame.Api.Models
         public PlayerType? Winner { get; set; }
         public Guid? HiderToken { get; set; }
         public Guid? SeekerToken { get; set; }
+        public Guid? HiderUserId { get; set; }
+        public Guid? SeekerUserId { get; set; }
         public DateTimeOffset CreatedAt { get; set; }
         public DateTimeOffset UpdatedAt { get; set; }
 
@@ -31,6 +33,8 @@ namespace MazeGame.Api.Models
             PlayerType? Winner,
             Guid? HiderToken,
             Guid? SeekerToken,
+            Guid? HiderUserId,
+            Guid? SeekerUserId,
             DateTimeOffset CreatedAt,
             DateTimeOffset UpdatedAt
         )
@@ -45,11 +49,13 @@ namespace MazeGame.Api.Models
             this.Winner = Winner;
             this.HiderToken = HiderToken;
             this.SeekerToken = SeekerToken;
+            this.HiderUserId = HiderUserId;
+            this.SeekerUserId = SeekerUserId;
             this.CreatedAt = CreatedAt;
             this.UpdatedAt = UpdatedAt;
         } 
 
-        public static Game CreateHiderGame(Guid HostToken)
+        public static Game CreateHiderGame(Guid HostToken, Guid? HostUserId)
         {
             return new Game(
                 Guid.NewGuid(),
@@ -62,14 +68,16 @@ namespace MazeGame.Api.Models
                 null,
                 HostToken,
                 null,
+                HostUserId,
+                null,
                 DateTimeOffset.UtcNow,
                 DateTimeOffset.UtcNow
             );
-            
+
         }
 
 
-        public static Game CreateSeekerGame(Guid HostToken)
+        public static Game CreateSeekerGame(Guid HostToken, Guid? HostUserId)
         {
             return new Game(
                 Guid.NewGuid(),
@@ -82,10 +90,12 @@ namespace MazeGame.Api.Models
                 null,
                 null,
                 HostToken,
+                null,
+                HostUserId,
                 DateTimeOffset.UtcNow,
                 DateTimeOffset.UtcNow
             );
-            
+
         }
     }
 

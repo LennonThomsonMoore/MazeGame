@@ -53,18 +53,18 @@ namespace MazeGame.Api.Contracts
             );
         }
 
-        public static PollResponse ForGameOver(Guid gameId, PlayerType winner)
+        public static PollResponse ForGameOver(Guid gameId, PlayerType winner, PlayerPosition? yourPosition, PlayerPosition? opponentPosition, Cell[][]? maze)
         {
             return new PollResponse(
                 gameId,
-                YourPosition: null,
-                OpponentPosition: null,
+                YourPosition: yourPosition,
+                OpponentPosition: opponentPosition,
                 CurrentPlayer: default,
                 TurnNumber: 0,
                 MovesUntilReveal: 0,
                 Status: GameStatus.Completed,
                 Winner: winner,
-                Maze: null
+                Maze: maze
             );
         }
     }

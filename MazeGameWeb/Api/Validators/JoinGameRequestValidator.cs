@@ -47,6 +47,16 @@ namespace MazeGame.Api.Validators
                     });
                     return;
                 }
+
+                var creatorUserId = game.HiderUserId ?? game.SeekerUserId;
+                if (creatorUserId != null && creatorUserId == gameWithRequest.userId)
+                {
+                    context.AddFailure(new ValidationFailure("GameId", "You cannot join a game you created.")
+                    {
+                        ErrorCode = "Conflict"
+                    });
+                    return;
+                }
             });
         }
     }

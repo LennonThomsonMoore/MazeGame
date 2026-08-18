@@ -109,6 +109,9 @@
     function registerUser(username, password) {
     return apiRequest("/auth/register", {username, password});
 }
+    function fetchMyGames() {
+    return apiGetRequest("/me/games");
+}
     function loginUser(username, password) {
     return apiRequest("/auth/login", {username, password});
 }
@@ -259,6 +262,23 @@ function notifyOpponentOfMove() {
     }
 }
 
+    let gamePollTimer = null;
+    function startGamePolling() {
+        if (gamePollTimer) return;
+        gamePollTimer = setInterval(() => {
+            if (state.gameId && state.gameStatus !== "completed") {
+                doPoll();
+            }
+        }, 1000);
+    }
+    function stopGamePolling() {
+        if (gamePollTimer) {
+            clearInterval(gamePollTimer);
+            gamePollTimer = null;
+        }
+    }
+    startGamePolling();
+
     function applyPollResponse(data) {
         // Normalize enum ints -> strings
         state.gameStatus = GameStatus[data.status];
@@ -270,6 +290,9 @@ function notifyOpponentOfMove() {
 
     if (state.gameStatus === "completed") {
         state.winner = data.winner != null ? PlayerType[data.winner] : state.winner;
+    if (data.maze) state.maze = data.maze;
+    state.yourPosition = data.yourPosition || state.yourPosition || null;
+    state.opponentPosition = data.opponentPosition || state.opponentPosition || null;
     saveGame();
     setConnection(true);
     renderGameOver();
@@ -398,6 +421,76 @@ function notifyOpponentOfMove() {
     waitingPollTimer = null;
     }
 }
+
+    /* ============================================================
+       Profile (my games)
+       ============================================================ */
+    async function listMyGames() {
+        const btn = document.getElementById("btn-refresh-profile");
+    const spin = document.getElementById("profile-spin");
+    setButtonLoading(btn, spin, true);
+    try {
+        const games = await fetchMyGames();
+    renderMyGames(games);
+    } catch {
+        toast("Unable to load your games.");
+    } finally {
+        setButtonLoading(btn, spin, false);
+    }
+}
+
+    function renderMyGames(games) {
+        const list = document.getElementById("profile-games-list");
+    const empty = document.getElementById("profile-empty");
+    list.innerHTML = "";
+
+    const myGames = Array.isArray(games) ? games : [];
+    if (myGames.length === 0) {
+        empty.classList.remove("hidden");
+    return;
+    }
+    empty.classList.add("hidden");
+
+    for (const g of myGames) {
+        const li = document.createElement("li");
+    li.className = "row";
+    li.style.justifyContent = "space-between";
+    li.style.padding = "8px 0";
+
+    const role = PlayerType[g.role] ?? "—";
+    const status = GameStatus[g.gameStatus] ?? "—";
+    const winner = (g.winner === null || g.winner === undefined) ? "—" : PlayerType[g.winner];
+    const updated = g.updatedAt ? new Date(g.updatedAt).toLocaleString() : "—";
+
+    const label = document.createElement("span");
+    label.className = "chip";
+    label.innerHTML = `Game: <strong>${shortId(g.gameId)}</strong> · Role: <strong>${role}</strong> · Status: <strong>${status}</strong> · Winner: <strong>${winner}</strong> · Updated: <strong>${updated}</strong>`;
+
+    li.appendChild(label);
+
+    if (g.playerToken) {
+        const actionBtn = document.createElement("button");
+        actionBtn.className = "secondary";
+        actionBtn.textContent = status === "completed" ? "View Final State" : "Join";
+        actionBtn.addEventListener("click", () => viewOrJoinGame(g));
+        li.appendChild(actionBtn);
+    }
+
+    list.appendChild(li);
+    }
+}
+
+    function viewOrJoinGame(g) {
+        state.gameId = String(g.gameId);
+        state.playerToken = String(g.playerToken);
+        state.role = PlayerType[g.role];
+        state.gameStatus = GameStatus[g.gameStatus];
+        state.winner = (g.winner === null || g.winner === undefined) ? null : PlayerType[g.winner];
+        doPoll();
+        if (state.gameStatus !== "completed") {
+            setupPeerConnection();
+        }
+    }
 
     /* ============================================================
        Game rendering
@@ -704,6 +797,17 @@ document.getElementById("btn-logout").addEventListener("click", async () => {
     try { await logoutUser(); } catch { /* ignore, still clear client state */ }
     localStorage.removeItem(AUTH_USERNAME_KEY);
     showScreen("screen-login");
+});
+
+document.getElementById("btn-profile").addEventListener("click", () => {
+    showScreen("screen-profile");
+    listMyGames();
+});
+
+document.getElementById("btn-refresh-profile").addEventListener("click", listMyGames);
+
+document.getElementById("btn-profile-back").addEventListener("click", () => {
+    showScreen("screen-start");
 });
 
 document.getElementById("btn-create").addEventListener("click", async () => {

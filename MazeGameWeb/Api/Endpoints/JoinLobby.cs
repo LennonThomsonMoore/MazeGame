@@ -6,6 +6,7 @@ using System.Diagnostics;
 using MazeGame.Api.Services;
 using MazeGame.Api.Validators;
 using FluentValidation;
+using System.Security.Claims;
 
 namespace MazeGame.Api.Endpoints
 {
@@ -13,10 +14,16 @@ namespace MazeGame.Api.Endpoints
     {
         public static void MapJoinLobbyEndpoint(this WebApplication app)
         {
-            app.MapPost("/join", async (JoinGameRequest request, IValidator<GameWithJoinGameRequest> validator, GameDbContext db) =>
+            app.MapPost("/join", async (HttpContext httpContext, JoinGameRequest request, IValidator<GameWithJoinGameRequest> validator, GameDbContext db) =>
             {
+                var userIdClaim = httpContext.User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+                if (string.IsNullOrEmpty(userIdClaim) || !Guid.TryParse(userIdClaim, out var userId))
+                {
+                    return Results.Unauthorized();
+                }
+
                 var game = await db.Games.FirstOrDefaultAsync(g => g.GameId == request.GameId);
-                var gameWithRequest = new GameWithJoinGameRequest(game, request);
+                var gameWithRequest = new GameWithJoinGameRequest(game, request, userId);
                 var validationResult = await validator.ValidateAsync(gameWithRequest);
                 if (!validationResult.IsValid)
                 {
@@ -39,11 +46,13 @@ namespace MazeGame.Api.Endpoints
                 if (game.HiderToken == null)
                 {
                     game.HiderToken = joinerToken;
+                    game.HiderUserId = userId;
                     joinerRole = PlayerType.Hider;
                 }
                 else
                 {
                     game.SeekerToken = joinerToken;
+                    game.SeekerUserId = userId;
                     joinerRole = PlayerType.Seeker;
                 }
 

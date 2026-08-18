@@ -46,7 +46,12 @@ namespace MazeGame.Api.Endpoints
                     {
                         return Results.Problem("Winner should not be null when game is completed.");
                     }
-                    var response = PollResponse.ForGameOver(game.GameId, game.Winner.Value);
+                    var response = PollResponse.ForGameOver(
+                        game.GameId,
+                        game.Winner.Value,
+                        isHider ? game.HiderPosition : game.SeekerPosition,
+                        isHider ? game.SeekerPosition : game.HiderPosition,
+                        game.Maze);
                     return Results.Ok(response);
                 }
 

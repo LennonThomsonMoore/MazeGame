@@ -7,7 +7,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
 
-namespace MazeGameWeb.Api.Migrations
+namespace MazeGame.Api.Migrations
 {
     [DbContext(typeof(GameDbContext))]
     partial class GameDbContextModelSnapshot : ModelSnapshot
@@ -15,7 +15,7 @@ namespace MazeGameWeb.Api.Migrations
         protected override void BuildModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
-            modelBuilder.HasAnnotation("ProductVersion", "10.0.1");
+            modelBuilder.HasAnnotation("ProductVersion", "9.0.19");
 
             modelBuilder.Entity("MazeGame.Api.Models.Game", b =>
                 {
@@ -35,16 +35,23 @@ namespace MazeGameWeb.Api.Migrations
                     b.Property<Guid?>("HiderToken")
                         .HasColumnType("TEXT");
 
+                    b.Property<Guid?>("HiderUserId")
+                        .HasColumnType("TEXT");
+
                     b.Property<string>("Maze")
                         .HasColumnType("TEXT");
 
                     b.Property<Guid?>("SeekerToken")
                         .HasColumnType("TEXT");
 
+                    b.Property<Guid?>("SeekerUserId")
+                        .HasColumnType("TEXT");
+
                     b.Property<int>("TurnNumber")
                         .HasColumnType("INTEGER");
 
                     b.Property<DateTimeOffset>("UpdatedAt")
+                        .IsConcurrencyToken()
                         .HasColumnType("TEXT");
 
                     b.Property<int?>("Winner")

@@ -5,6 +5,7 @@ namespace MazeGame.Api.Validators
 {
     public record GameWithJoinGameRequest(
         Game? game,
-        JoinGameRequest joinGameRequest
+        JoinGameRequest joinGameRequest,
+        Guid userId
     );
 }
