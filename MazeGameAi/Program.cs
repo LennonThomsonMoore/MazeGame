@@ -1,9 +1,11 @@
 ﻿using Autofac;
 using MazeGame.Api.Models;
-using MazeGameAi.Client;
+using MazeGameAi.src.Client;
 using MazeGameAi.src.Agents;
+using MazeGameAi.src.Client;
 using MazeGameAi.src.GameLoop;
 using MazeGameAi.src.PathFinding;
+using System.Net;
 
 namespace MazeGameAi
 {
@@ -20,6 +22,9 @@ namespace MazeGameAi
             builder.RegisterType<ClustersAgent>().Keyed<IAgent>(PlayerType.Hider);
 
             builder.RegisterType<GameLoop>().AsSelf();
+
+
+            builder.RegisterType<MazeGameApiClient>().As<IMazeGameApiClient>().SingleInstance();
 
             var container = builder.Build();
 

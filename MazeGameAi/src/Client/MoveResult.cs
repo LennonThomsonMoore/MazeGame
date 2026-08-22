@@ -1,6 +1,6 @@
 using MazeGame.Api.Contracts;
 
-namespace MazeGameAi.Client
+namespace MazeGameAi.src.Client
 {
     /// <summary>
     /// Wraps the outcome of a move attempt so callers can distinguish

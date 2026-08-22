@@ -1,9 +1,5 @@
 ﻿using Autofac.Features.Indexed;
-using MazeGameAi.Client;
-using System;
-using System.Collections.Generic;
-using System.Text;
-using System.Threading.Tasks;
+using MazeGameAi.src.Client;
 using MazeGame.Api.Models;
 using MazeGameAi.src.Agents;
 
@@ -21,18 +17,20 @@ namespace MazeGameAi.src.GameLoop
 
         private readonly IIndex<PlayerType, IAgent> _agentFactory;
 
-        public GameLoop(IIndex<PlayerType, IAgent> agentFactory)
+        public GameLoop(IIndex<PlayerType, IAgent> agentFactory, IMazeGameApiClient mazeGameApiClient)
         {
             _agentFactory = agentFactory;
+            _mazeGameApiClient = mazeGameApiClient;
         }
 
+        private IMazeGameApiClient _mazeGameApiClient { get; }
 
         public async Task Start(Guid? GameId = null)
         {
             if (GameId == null)
             {
                 Console.WriteLine("Creating game... ");
-                var response = await MazeGameApiClient.CreateGameAsync();
+                var response = await _mazeGameApiClient.CreateGameAsync();
                 Console.WriteLine($"Created game at {response.gameId} ");
                 _GameId = response.gameId;
                 _PlayerToken = response.playerToken;
@@ -41,7 +39,7 @@ namespace MazeGameAi.src.GameLoop
             else
             {
                 Console.WriteLine($"Joining game at {GameId}");
-                var response = await MazeGameApiClient.JoinGameAsync(GameId.Value);
+                var response = await _mazeGameApiClient.JoinGameAsync(GameId.Value);
                 _GameId = GameId.Value;
                 _PlayerToken = response.playerToken;
                 _Role = response.role;
@@ -58,7 +56,7 @@ namespace MazeGameAi.src.GameLoop
             Boolean started = false;
             while (!started)
             {
-                var response = await MazeGameApiClient.PollAsync(_PlayerToken, _GameId);
+                var response = await _mazeGameApiClient.PollAsync(_PlayerToken, _GameId);
                 if (response.Status == GameStatus.Active)
                 {
                     started = true;
@@ -70,7 +68,7 @@ namespace MazeGameAi.src.GameLoop
             //Polls server and performs move
             while (true)
             {
-                var response = await MazeGameApiClient.PollAsync(_PlayerToken, _GameId);
+                var response = await _mazeGameApiClient.PollAsync(_PlayerToken, _GameId);
                 if (response.Status == GameStatus.Completed)
                 {
                     Console.WriteLine("The game has ended. " + response.Winner.ToString() + " won.");
@@ -82,7 +80,7 @@ namespace MazeGameAi.src.GameLoop
                     Console.WriteLine("I am a " + _Role.ToString());
                     DrawGameState(response);
                     Direction direction = agent.decideMove(response);
-                    var response2 = await MazeGameApiClient.MoveAsync(_PlayerToken, _GameId, direction);
+                    var response2 = await _mazeGameApiClient.MoveAsync(_PlayerToken, _GameId, direction);
                     if (response2.IsSuccess)
                     {
                         Console.WriteLine($"Moved {direction} successfully.");

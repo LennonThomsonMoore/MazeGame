@@ -3,11 +3,11 @@ using System.Net.Http.Json;
 using MazeGame.Api.Contracts;
 using MazeGame.Api.Models;
 
-namespace MazeGameAi.Client
+namespace MazeGameAi.src.Client
 {
 
-	public static class MazeGameApiClient
-	{
+	public class MazeGameApiClient : IMazeGameApiClient
+    {
 		private const string BaseUrl = "http://localhost:5292";
 		private static readonly CookieContainer cookieContainer = new();
 		private static readonly HttpClientHandler handler = new() { CookieContainer = cookieContainer };
@@ -23,7 +23,7 @@ namespace MazeGameAi.Client
 		/// future calls. On the rare chance the generated username already exists,
 		/// a new random username/password pair is generated and registration is retried.
 		/// </summary>
-		private static async Task EnsureAuthenticatedAsync()
+		private async Task EnsureAuthenticatedAsync()
 		{
 			if (_isAuthenticated)
 			{
@@ -65,7 +65,7 @@ namespace MazeGameAi.Client
 			}
 		}
 
-		public static async Task<PollResponse> PollAsync(Guid playerToken, Guid gameId)
+		public async Task<PollResponse> PollAsync(Guid playerToken, Guid gameId)
 		{
 			await EnsureAuthenticatedAsync();
 			var response = await client.GetAsync($"/poll?playerToken={playerToken}&gameId={gameId}");
@@ -74,7 +74,7 @@ namespace MazeGameAi.Client
             return pollResponse;
         }
 
-        public static async Task<MoveResult> MoveAsync(Guid playerToken, Guid gameId, Direction direction)
+        public async Task<MoveResult> MoveAsync(Guid playerToken, Guid gameId, Direction direction)
         {
             await EnsureAuthenticatedAsync();
             var moveRequest = new MoveRequest(gameId, playerToken, direction);
@@ -91,7 +91,7 @@ namespace MazeGameAi.Client
             return MoveResult.Success(moveResponse);
         }
 
-        public static async Task<CreateGameResponse> CreateGameAsync()
+        public async Task<CreateGameResponse> CreateGameAsync()
         {
             await EnsureAuthenticatedAsync();
             var response = await client.PostAsync("/create", null);
@@ -100,7 +100,7 @@ namespace MazeGameAi.Client
             return createGameResponse;
         }
 
-        public static async Task<JoinGameResponse> JoinGameAsync(Guid gameId)
+        public async Task<JoinGameResponse> JoinGameAsync(Guid gameId)
         {
             await EnsureAuthenticatedAsync();
             var joinGameRequest = new JoinGameRequest(gameId);

@@ -36,7 +36,10 @@ namespace MazeGame.Api.Services
             {
                 for (int col = 1; col < LastIndex; col++)
                 {
-                    if (maze[row][col] == Cell.Wall)
+                    // Only consider walls adjacent to an already-open cell. Removing a wall
+                    // with no open neighbor (e.g. an untouched odd/odd intersection cell)
+                    // would create an isolated island disconnected from the rest of the maze.
+                    if (maze[row][col] == Cell.Wall && HasEmptyNeighbor(maze, row, col))
                     {
                         innerWalls.Add((row, col));
                     }
@@ -51,6 +54,14 @@ namespace MazeGame.Api.Services
                 maze[wall.Row][wall.Col] = Cell.Empty;
                 innerWalls.RemoveAt(index);
             }
+        }
+
+        private static bool HasEmptyNeighbor(Cell[][] maze, int row, int col)
+        {
+            return maze[row - 1][col] == Cell.Empty
+                || maze[row + 1][col] == Cell.Empty
+                || maze[row][col - 1] == Cell.Empty
+                || maze[row][col + 1] == Cell.Empty;
         }
 
         private static Cell[][] GenerateWilson()
