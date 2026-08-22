@@ -11,6 +11,7 @@ namespace MazeGameAi.src.Agents
 	// clustering algorithm. It then heads towards the closest cluster point that is
 	// not in the same cluster as the opponent, moving to another such cluster once it
 	// arrives (or once the opponent's cluster changes).
+	[AgentFor(PlayerType.Hider)]
 	public class ClustersAgent : IAgent
 	{
 		private const int ClusterCount = 3;

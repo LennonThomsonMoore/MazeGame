@@ -1,4 +1,5 @@
 ﻿using Autofac;
+using Autofac.Core;
 using MazeGame.Api.Models;
 using MazeGameAi.src.Client;
 using MazeGameAi.src.Agents;
@@ -6,6 +7,7 @@ using MazeGameAi.src.Client;
 using MazeGameAi.src.GameLoop;
 using MazeGameAi.src.PathFinding;
 using System.Net;
+using System.Reflection;
 
 namespace MazeGameAi
 {
@@ -18,8 +20,11 @@ namespace MazeGameAi
             builder.RegisterType<RandomDirectionGenerator>().As<IRandomDirectionGenerator>().SingleInstance();
             builder.RegisterType<Dijkstra>().As<PathfindingAlgorithm>();
 
-            builder.RegisterType<FugalAgent>().Keyed<IAgent>(PlayerType.Seeker);
-            builder.RegisterType<ClustersAgent>().Keyed<IAgent>(PlayerType.Hider);
+            // Scan the assembly for any IAgent implementation decorated with [AgentFor(playerType)]
+            // and register it keyed by that PlayerType, instead of listing each agent by hand.
+            builder.RegisterAssemblyTypes(Assembly.GetExecutingAssembly())
+                .Where(t => typeof(IAgent).IsAssignableFrom(t) && t.GetCustomAttribute<AgentForAttribute>() != null)
+                .As(t => new KeyedService(t.GetCustomAttribute<AgentForAttribute>()!.PlayerType, typeof(IAgent)));
 
             builder.RegisterType<GameLoop>().AsSelf();
 

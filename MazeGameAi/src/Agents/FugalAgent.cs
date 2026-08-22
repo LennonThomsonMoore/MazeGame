@@ -8,6 +8,7 @@ using System.Text;
 namespace MazeGameAi.src.Agents
 {
     // This is agent is designed to move away from the opponent, uses Dijkstra's algorithm to find the best path away from the opponent.
+    [AgentFor(PlayerType.Seeker)]
     public class FugalAgent : IAgent 
     {
         private readonly PathfindingAlgorithm _pathfindingAlgorithm;
