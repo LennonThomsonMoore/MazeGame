@@ -1,5 +1,9 @@
-﻿using MazeGameAi.Client;
+﻿using Autofac;
+using MazeGame.Api.Models;
+using MazeGameAi.Client;
+using MazeGameAi.src.Agents;
 using MazeGameAi.src.GameLoop;
+using MazeGameAi.src.PathFinding;
 
 namespace MazeGameAi
 {
@@ -7,9 +11,21 @@ namespace MazeGameAi
     {
         public static async Task Main(string[] args)
         {
+            var builder = new ContainerBuilder();
+
+            builder.RegisterType<RandomDirectionGenerator>().As<IRandomDirectionGenerator>().SingleInstance();
+            builder.RegisterType<Dijkstra>().As<PathfindingAlgorithm>();
+
+            builder.RegisterType<FugalAgent>().Keyed<IAgent>(PlayerType.Seeker);
+            builder.RegisterType<ClustersAgent>().Keyed<IAgent>(PlayerType.Hider);
+
+            builder.RegisterType<GameLoop>().AsSelf();
+
+            var container = builder.Build();
+
             Console.WriteLine("Do you want to start a new game or join an existing one? (new/join)");
             string? choice = Console.ReadLine()?.Trim().ToLower();
-            GameLoop gameLoop = new GameLoop();
+            GameLoop gameLoop = container.Resolve<GameLoop>();
             if (choice == "join")
             {
                 Console.WriteLine("AI will join game.");

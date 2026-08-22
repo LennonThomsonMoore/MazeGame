@@ -22,6 +22,12 @@ namespace MazeGameAi.src.Agents
 		private PlayerPosition? lastSeenOpponentPosition;
 		private int _currentOpponentCluster = -1;
 		private int _previousOpponentCluster = -1;
+		private readonly PathfindingAlgorithm _pathfindingAlgorithm;
+
+        public ClustersAgent(PathfindingAlgorithm pathfindingAlgorithm)
+        {
+            _pathfindingAlgorithm = pathfindingAlgorithm;
+        }
 
 		public Direction decideMove(PollResponse gameState)
 		{
@@ -98,7 +104,7 @@ namespace MazeGameAi.src.Agents
 
 			List<PlayerPosition> positionsToAvoid = GetSurroundingPositions(maze, lastSeenOpponentPosition!, 1);
 
-			return Dijkstra.NextMoveTowardsTarget(maze, yourPosition, targetCenter, positionsToAvoid);
+			return _pathfindingAlgorithm.NextMoveTowardsTarget(maze, yourPosition, targetCenter, positionsToAvoid);
 		}
 
 		// Returns every position within the given range (a square, using Chebyshev distance)

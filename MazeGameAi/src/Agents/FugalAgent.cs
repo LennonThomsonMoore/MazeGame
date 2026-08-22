@@ -10,6 +10,11 @@ namespace MazeGameAi.src.Agents
     // This is agent is designed to move away from the opponent, uses Dijkstra's algorithm to find the best path away from the opponent.
     public class FugalAgent : IAgent 
     {
+        private readonly PathfindingAlgorithm _pathfindingAlgorithm;
+        public FugalAgent(PathfindingAlgorithm pathfindingAlgorithm) 
+        { 
+            _pathfindingAlgorithm = pathfindingAlgorithm;
+        }
         private PlayerPosition lastSeenOpponentPosition;
         public Direction decideMove(PollResponse gameState)
         {
@@ -17,7 +22,7 @@ namespace MazeGameAi.src.Agents
             {
                 lastSeenOpponentPosition = gameState.OpponentPosition;
             }
-            return Dijkstra.NextMoveAwayFromTarget(gameState.Maze, gameState.YourPosition, lastSeenOpponentPosition);
+            return _pathfindingAlgorithm.NextMoveAwayFromTarget(gameState.Maze, gameState.YourPosition, lastSeenOpponentPosition);
         }
 
     }

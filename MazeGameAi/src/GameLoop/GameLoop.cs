@@ -1,4 +1,5 @@
-﻿using MazeGameAi.Client;
+﻿using Autofac.Features.Indexed;
+using MazeGameAi.Client;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -17,6 +18,13 @@ namespace MazeGameAi.src.GameLoop
         public TimeSpan PollRate { get; set; } = TimeSpan.FromSeconds(1);
 
         private IAgent agent;
+
+        private readonly IIndex<PlayerType, IAgent> _agentFactory;
+
+        public GameLoop(IIndex<PlayerType, IAgent> agentFactory)
+        {
+            _agentFactory = agentFactory;
+        }
 
 
         public async Task Start(Guid? GameId = null)
@@ -43,14 +51,7 @@ namespace MazeGameAi.src.GameLoop
 
             //Decides strategy
 
-            if (_Role == PlayerType.Hider)
-            {
-                agent = new ClustersAgent();
-            }
-            else
-            {
-                agent = new PetalAgent();
-            }
+            agent = _agentFactory[_Role];
 
             //Wait for game to start
 

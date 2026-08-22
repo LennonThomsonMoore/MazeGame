@@ -22,3 +22,9 @@ Thumbs.db
 ## Local dev / secrets
 launchSettings.json
 docker-compose.override.yml
+
+## NCrunch
+*.ncrunchsolution
+*.ncrunchproject
+.ncrunch/
+.NCrunch_*/

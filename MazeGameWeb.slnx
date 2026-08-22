@@ -3,4 +3,5 @@
     <Build />
   </Project>
   <Project Path="MazeGameWeb/MazeGame.csproj" />
+  <Project Path="MazeGameWeb.Tests/MazeGameWeb.Tests.csproj" />
 </Solution>

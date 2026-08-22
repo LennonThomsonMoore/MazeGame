@@ -8,22 +8,28 @@ using System.Diagnostics;
 
 namespace MazeGameAi.src.PathFinding
 {
-    public static class Dijkstra
+    public class Dijkstra : PathfindingAlgorithm
     {
+        private readonly IRandomDirectionGenerator _generator;
+
+        public Dijkstra(IRandomDirectionGenerator generator) 
+        { 
+            _generator = generator;
+        }
 
         // Performs Dijkstra's algorithm to find the shortest path from the player's position toward the target's position in the maze.
-        public static Direction NextMoveTowardsTarget(Cell[][] maze, PlayerPosition yourPosition, PlayerPosition? targetPosition, IEnumerable<PlayerPosition>? positionsToAvoid = null)
+        public Direction NextMoveTowardsTarget(Cell[][] maze, PlayerPosition yourPosition, PlayerPosition? targetPosition, IEnumerable<PlayerPosition>? positionsToAvoid = null)
         {
             return NextMove(towardsOpponent: true, maze, yourPosition, targetPosition, positionsToAvoid);
         }
 
         // Performs Dijkstra's algorithm to find the shortest path from the player's position away from the target's position in the maze.
-        public static Direction NextMoveAwayFromTarget(Cell[][] maze, PlayerPosition yourPosition, PlayerPosition? targetPosition, IEnumerable<PlayerPosition>? positionsToAvoid = null)
+        public Direction NextMoveAwayFromTarget(Cell[][] maze, PlayerPosition yourPosition, PlayerPosition? targetPosition, IEnumerable<PlayerPosition>? positionsToAvoid = null)
         {
             return NextMove(towardsOpponent: false, maze, yourPosition, targetPosition, positionsToAvoid);
         }
 
-        private static Direction NextMove(bool towardsOpponent, Cell[][] maze, PlayerPosition yourPosition, PlayerPosition? targetPosition, IEnumerable<PlayerPosition>? positionsToAvoid)
+        private Direction NextMove(bool towardsOpponent, Cell[][] maze, PlayerPosition yourPosition, PlayerPosition? targetPosition, IEnumerable<PlayerPosition>? positionsToAvoid)
         {
             Console.WriteLine("Calculating next move using Dijkstra's algorithm...");
             if (maze == null) throw new ArgumentNullException(nameof(maze), "Maze is null");
@@ -31,7 +37,7 @@ namespace MazeGameAi.src.PathFinding
             //if not target pick random direction
             if (targetPosition == null)
             {
-                return (Direction) new Random().Next(0, 4);
+                return _generator.generate();
             }
 
             HashSet<(int Row, int Col)> avoidSet = positionsToAvoid?
@@ -112,7 +118,7 @@ namespace MazeGameAi.src.PathFinding
                 }
             }
 
-            Direction resolvedMove = nextMove ?? (Direction)new Random().Next(0, 4);
+            Direction resolvedMove = nextMove ?? _generator.generate();
             Console.WriteLine($"Calculated next move using Dijkstra's algorithm. {resolvedMove} with {minDistance} distance. ");
             return resolvedMove;
         }
